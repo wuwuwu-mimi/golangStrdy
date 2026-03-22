@@ -1,0 +1,43 @@
+# go
+
+
+## 变量声明方式
+
+1.  var 变量名 数据类型  有数据类型的默认值
+2.  var 变量名 数据类型 := 初始化值
+3.  var 变量名 := 初始化值  由编译器 判断
+4.  变量名 := 值 可以直接省略 var 和 类型  但是只能使用在局部变量
+
+声明多个变量
+var v1,v2 = 值，值
+var(
+     v1 类型 = 值
+     v2 类型 = 值
+     v3 类型 = 值
+)
+
+## const
+
+可以使用 const 关键字定义常量
+```golang
+    const length int = 1000
+```
+
+可以使用 const 定义枚举
+```golang
+    const(
+        BEIJING = 10
+        SHANGHAI = 20
+        SHENZHEN = 30
+    )
+
+    //在枚举中可以使用 iota 每行的iota都会累加1 ，第一个iota默认是0
+    // 可以使用一个 常数d 对 iota操作 例如 2* iota
+    const(
+        BEIJING = iota //0
+        SHANGHAI        //1
+        SHENZHEN        //2
+    )
+```
+
+## 函数
