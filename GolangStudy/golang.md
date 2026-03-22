@@ -41,3 +41,21 @@ var(
 ```
 
 ## 函数
+
+**定义函数**
+
+```golang
+    // 单返回值
+    func funcName(v1,v2) type {
+
+    }
+
+    //多返回值 匿名
+    func funcName(v1,v2) (type,type,...) {
+
+    }
+    // 多返回值 有形参名称
+    func funcName(v1,v2) (name1 type ,name2 type,...){
+        reutrn name1,name2
+    }
+```
