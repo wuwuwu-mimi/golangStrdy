@@ -197,3 +197,257 @@ var myMap = map[string]int{
     // 在map当做形参时，传递给函数的是 一个指向原map的指针，在方法中对map进行修改，也会对原map修改
     func changeValue(myMap map[stirng]int){}
 ```
+## 面向对象的基本特征
+
+### 封装 使用 struct
+```golang
+    //对数据类型声明一个别名
+type myint int
+
+//定义一个结构体
+type Book struct {
+	name string
+	age  int
+	auth string
+}
+
+// 值传递，传递一个副本，修改不会影响到原结构体
+func changeBook(book1 Book) {
+	book1.age = 1000
+}
+
+// 传递一个指针，可以对原结构体修改
+func changeBook1(book1 *Book) {
+	book1.age = 1000
+}
+
+func main() {
+	// 使用结构体
+	var book1 Book
+	book1.age = 12
+	book1.auth = "zhangsan"
+	book1.name = "母猪的产后护理"
+	//changeBook(book1)
+	changeBook1(&book1)
+	fmt.Println(book1)
+}
+```
+
+### 继承
+    ``` golang  
+    //父类
+    type Animal struct {
+        age int
+        sex string
+    }
+    func (a *Animal) Eat(){
+        fmt.Println("eatting.....")
+    }
+    func (a *Animal) Walk(){
+        fmt.Println("Walking....")
+    }
+
+    // 子类
+    type  Dog struct {
+        Animal
+        level int
+    }
+    // 重写父类方法
+    func (d *Dog) Eat(){
+        fmt.Println("dog eatting ...")
+    }
+
+    //使用子类
+    d := Dog{Animal{1o,"雄性"},100}
+    //或者
+    var d Dog
+    d.xxx = xxx
+    
+    // 使用父类方法
+    d.Walk()
+    // 使用子类方法 因为重写过了
+    d.Eat()
+    ```
+### 多态  **interface**
+使用interface关键字
+具体实现：
+``` golang 
+    // interface 本质是一个指针
+type AnimalInterface interface {
+	Sleep()
+	GetClolor() string
+	GetType() string
+}
+
+// 具体的类
+type Cat struct {
+	color string
+}
+
+// 实现接口的方法
+func (c *Cat) Sleep() {
+	fmt.Println("cat is sleep")
+}
+func (c *Cat) GetClolor() string {
+	return c.color
+}
+func (c *Cat) GetType() string {
+	return "Cat"
+}
+
+// 具体的类
+type Dog struct {
+	color string
+}
+// 实现接口的方法
+func (d *Dog) Sleep() {
+	fmt.Println("Dog is sleep")
+}
+func (d *Dog) GetClolor() string {
+	return d.color
+}
+func (d *Dog) GetType() string {
+	return "Dog"
+}
+
+// 可以传递 dog 也可以是 cat
+func showAnimal(animal AnimalInterface) {
+	fmt.Printf("animal.GetType(): %v\n", animal.GetType())
+}
+
+// 多态的现象
+func main() {
+	var animal AnimalInterface
+	//因为 interface的本质是指针，需要传递给它地址
+	animal = &Cat{"Green"}
+	// 此时调用的是 cat的sleep 方法
+	animal.Sleep()
+	fmt.Printf("animal.GetClolor(): %v\n", animal.GetClolor())
+	showAnimal(animal)
+	animal = &Dog{"Red"}
+	// 此时调用的是 dog的sleep方法
+	animal.Sleep()
+	fmt.Printf("animal.GetClolor(): %v\n", animal.GetClolor())
+	showAnimal(animal)
+}
+```
+**Golang中多态的基本要素**
+1. 有一个接口
+2. 有子类 (实现接口中所有方法)
+3. 父类类型的变量指针指向 子类的具体数据变量 。也就是说，子类实现接口的方法，然后由接口去调用具体的方法，从而使用子类的方法
+
+#### interface使用技巧
+**空接口**
+interface{} 是万能数据类型。可以将任何类型的值赋给一个空接口类型的变量
+``` golang
+    var any interface{}
+    // 随意赋值
+    any = 100
+    any ="adjfasdf"
+
+    // 在方法中使用
+    func myFunc(arg interface{}){}
+    func myFunc2(arg any){}
+
+```
+
+**如何区分**此时引用的底层数据类型是什么呢?
+可以使用类型断言机制
+```golang 
+    func interFunc(arg interface{}){
+        // 断言机制  相当于 Java中的 instance of
+        value,ok := arg.(string)
+        if !ok {
+            fmt.Println("arg is not string type")
+        }else{
+            fmt.Println("arg is string type")
+        }
+    }
+```
+
+## 反射机制
+在golang中 变量由 type 和 value 组成。称为 pair。
+
+type 又分为 static type(int ,string...)和 concrete type(interface 所具体指向的数据类型，系统看得见的类型)
+**基本使用方法**
+``` golang
+    import (
+	"fmt"
+	"reflect"
+)
+
+type User struct {
+	Id   int
+	Name string
+	Age  int
+}
+type Employee struct {
+	id   int
+	name string
+}
+
+func (u User) Call() {
+	fmt.Println("user is call ")
+	fmt.Printf("u: %v\n", u)
+}
+
+// 反射基本类型
+func reflectNum(arg any) {
+	fmt.Printf("reflect.TypeOf(arg): %v\n", reflect.TypeOf(arg))
+	fmt.Printf("reflect.TypeOf(arg): %v\n", reflect.TypeOf(arg))
+}
+
+// 反射复杂类型 之 获取 导出字段
+func getFieldAndMethond(class any) {
+	//获取 input 的 type
+	classType := reflect.TypeOf(class)
+	fmt.Printf("classType: %v\n", classType)
+	//获取class 的 value
+	classValue := reflect.ValueOf(class)
+	fmt.Printf("classValue: %v\n", classValue)
+
+	// 通过类型获取 类型获取 字段数量
+	// 通过字段数量遍历
+	for i := 0; i < classType.NumField(); i++ {
+		fieldType := classType.Field(i)          // 获取字段类型
+		value := classValue.Field(i).Interface() // 获取字段值
+
+		fmt.Printf("字段名 ： %s , 字段类型 : %v , 字段值 ： %v\n", fieldType.Name, fieldType.Type, value)
+	}
+	fmt.Println("========获取方法=========")
+	for i := 0; i < classType.NumMethod(); i++ {
+		m := classType.Method(i)
+		fmt.Printf("方法名 :%s ---- 类型%v\n", m.Name, m.Type)
+	}
+
+}
+
+// 反射复杂类型之 获取 未导出字段
+func getNoFiled(class any) {
+	t := reflect.TypeOf(class)  //获取反射类型
+	v := reflect.ValueOf(class) // 获取反射类型的值 整个结构体
+
+	// 遍历所有字段
+	for i := 0; i < t.NumField(); i++ {
+		field := t.Field(i)
+		fieldValue := v.Field(i)
+		switch fieldValue.Kind() {
+		case reflect.Int:
+			fmt.Printf("字段：%s，值：%d\n", field.Name, fieldValue.Int())
+		case reflect.String:
+			fmt.Printf("字段：%s，值：%s\n", field.Name, fieldValue.String())
+		}
+	}
+}
+
+func main() {
+	user := User{1, "Ace", 100}
+	getFieldAndMethond(user)
+	fmt.Println("============================")
+	employee := Employee{1, "zhangsan"}
+	getNoFiled(employee)
+}
+
+```
+
+
